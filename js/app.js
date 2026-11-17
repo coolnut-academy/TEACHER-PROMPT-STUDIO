@@ -541,7 +541,7 @@
       dom.readinessBadge.classList.add('is-ready');
       dom.mobileTabDot.classList.add('is-ready');
       dom.mobileDockDot.classList.add('is-ready');
-      dom.mobileStatusText.textContent = `พร้อมใช้งาน • ${stats.charCount.toLocaleString('th-TH')} ตัวอักษร`;
+      dom.mobileStatusText.textContent = `พร้อมใช้ • ${stats.charCount.toLocaleString('th-TH')} ตัวอักษร`;
       clearInvalidHighlights();
     } else {
       dom.readinessBadge.textContent = `รอข้อมูล ${validation.missingFields.length} ช่อง`;
