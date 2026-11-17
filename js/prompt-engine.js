@@ -47,15 +47,20 @@
   function createDefaultState() {
     return {
       subjectGroup: 'science',
+      customGroup: '',
       subject: 'ฟิสิกส์',
       customSubject: '',
       grade: 'ม.4',
+      customGrade: '',
       topic: '',
       objectives: '',
+      creatorName: '',
+      schoolName: '',
       difficulty: 'medium',
       questionCount: 5,
       durationMinutes: 30,
       assessmentType: 'multiple-choice',
+      customActivity: '',
       useStudentSeed: true,
       classSize: 40,
       strategyMode: 'auto',
@@ -75,6 +80,10 @@
     const input = rawState && typeof rawState === 'object' ? rawState : {};
 
     const group = strategies.getGroupById(input.subjectGroup || defaults.subjectGroup);
+    const customGroup = sanitizeSingleLine(input.customGroup || '');
+    const effectiveGroupLabel =
+      group.id === 'custom' && customGroup ? customGroup : group.label;
+
     let subject = sanitizeSingleLine(input.subject || '');
 
     if (!subject) {
@@ -82,7 +91,6 @@
     } else if (group.id !== 'custom' && subject !== '__custom__') {
       const existsInGroup = group.subjects.some((s) => s.id === subject);
       if (!existsInGroup) {
-        // Preserve unexpected subject values safely as custom subject if needed
         subject = '__custom__';
       }
     }
@@ -93,22 +101,53 @@
         ? customSubject
         : subject;
 
+    let gradeRaw = sanitizeSingleLine(input.grade || defaults.grade);
+    if (gradeRaw === 'อื่น ๆ / ไม่จำกัดระดับชั้น') {
+      gradeRaw = '__custom__';
+    }
+    const validGradeIds = strategies.GRADE_LEVELS.map((g) => (typeof g === 'string' ? g : g.id));
+    const grade = validGradeIds.includes(gradeRaw) ? gradeRaw : '__custom__';
+    const customGrade = sanitizeSingleLine(
+      input.customGrade !== undefined
+        ? input.customGrade
+        : !validGradeIds.includes(gradeRaw) && gradeRaw !== '__custom__'
+          ? gradeRaw
+          : ''
+    );
+    const effectiveGrade = grade === '__custom__' ? customGrade : grade;
+
+    const assessmentType = String(input.assessmentType || defaults.assessmentType);
+    const activityObj = strategies.getAssessmentTypeById(assessmentType);
+    const customActivity = sanitizeSingleLine(input.customActivity || '');
+    const effectiveActivityLabel =
+      assessmentType === 'custom'
+        ? customActivity
+        : `${activityObj.label} (${activityObj.thaiLabel})`;
+
     const strategyModeRaw = String(input.strategyMode || defaults.strategyMode);
     const validStrategyModes = ['auto', 'numerical', 'contextual', 'case-based', 'hybrid'];
     const strategyMode = validStrategyModes.includes(strategyModeRaw) ? strategyModeRaw : 'auto';
 
     return {
       subjectGroup: group.id,
+      customGroup,
+      effectiveGroupLabel,
       subject,
       customSubject,
       effectiveSubject,
-      grade: sanitizeSingleLine(input.grade || defaults.grade),
+      grade,
+      customGrade,
+      effectiveGrade,
       topic: sanitizeSingleLine(input.topic || ''),
       objectives: sanitizeMultiLine(input.objectives || ''),
+      creatorName: sanitizeSingleLine(input.creatorName || ''),
+      schoolName: sanitizeSingleLine(input.schoolName || ''),
       difficulty: String(input.difficulty || defaults.difficulty),
       questionCount: clampInt(input.questionCount, 1, 50, defaults.questionCount),
       durationMinutes: clampInt(input.durationMinutes, 5, 240, defaults.durationMinutes),
-      assessmentType: String(input.assessmentType || defaults.assessmentType),
+      assessmentType: activityObj.id,
+      customActivity,
+      effectiveActivityLabel,
       useStudentSeed: Boolean(
         input.useStudentSeed === undefined ? defaults.useStudentSeed : input.useStudentSeed
       ),
@@ -160,16 +199,23 @@
       });
     }
 
-    if (!state.grade) {
-      missingFields.push({ fieldId: 'gradeSelect', label: 'ระดับชั้น' });
+    if (!state.effectiveGrade) {
+      missingFields.push({
+        fieldId: state.grade === '__custom__' ? 'customGradeInput' : 'gradeSelect',
+        label: 'ระดับชั้น'
+      });
     }
 
     if (!state.topic) {
-      missingFields.push({ fieldId: 'topicInput', label: 'หัวข้อหรือเนื้อหาที่สอน' });
+      missingFields.push({ fieldId: 'topicInput', label: 'หัวข้อที่สอน' });
     }
 
     if (!state.objectives) {
       missingFields.push({ fieldId: 'objectivesInput', label: 'จุดประสงค์การเรียนรู้' });
+    }
+
+    if (state.assessmentType === 'custom' && !state.customActivity) {
+      missingFields.push({ fieldId: 'customActivityInput', label: 'รูปแบบกิจกรรมกำหนดเอง' });
     }
 
     const activityType = strategies.getAssessmentTypeById(state.assessmentType);
@@ -179,8 +225,7 @@
       warnings.push({
         id: 'assessment-answers-visible',
         level: 'info',
-        message:
-          'โหมดประเมินจริงกำลังเปิดแสดงเฉลยหลังส่งคำตอบ — เหมาะกับการเรียนรู้ด้วยตนเอง แต่หากต้องการลดการส่งต่อเฉลยระหว่างคาบ แนะนำให้ปิด "แสดงเฉลย" เพื่อให้ดูเฉพาะในโหมดครู'
+        message: 'โหมดประเมินจริงกำลังเปิดเฉลยไว้ — หากใช้เก็บคะแนนแนะนำให้ปิด "แสดงเฉลย" เพื่อเก็บไว้เฉพาะในโหมดครู'
       });
     }
 
@@ -188,8 +233,7 @@
       warnings.push({
         id: 'subjective-with-numerical',
         level: 'warning',
-        message:
-          'กิจกรรมที่เลือกเน้นการวิเคราะห์/สถานการณ์ ขณะที่กลยุทธ์เป็นแบบเปลี่ยนตัวเลข (Strategy A) — พิจารณาเลือกกลยุทธ์ B, C หรือ D เพื่อให้สอดคล้องกับรูปแบบคำถามมากขึ้น'
+        message: 'กิจกรรมที่เลือกเน้นวิเคราะห์/สถานการณ์ แต่กลยุทธ์เป็นแบบเปลี่ยนตัวเลข — ลองเปลี่ยนเป็นกลยุทธ์ B, C หรือ D'
       });
     }
 
@@ -202,7 +246,7 @@
       warnings.push({
         id: 'large-class-context-pool',
         level: 'info',
-        message: `ห้องเรียนขนาด ${state.classSize} คน: Prompt ได้สั่งให้ AI ตรวจสอบคลังสถานการณ์และแจ้งเตือนหากจำนวนชุดที่สร้างได้น้อยกว่าจำนวนนักเรียน`
+        message: `ห้องเรียน ${state.classSize} คน: Prompt สั่งให้ AI ตรวจความซ้ำและแจ้งเตือนหากคลังโจทย์มีไม่พอ`
       });
     }
 
@@ -210,7 +254,7 @@
       warnings.push({
         id: 'time-per-question-tight',
         level: 'info',
-        message: `เวลาเฉลี่ยต่อข้อน้อยกว่า 1 นาที (${state.durationMinutes} นาที / ${state.questionCount} ข้อ) โปรดตรวจความเหมาะสมกับระดับชั้น`
+        message: `เวลาเฉลี่ยไม่ถึงข้อละ 1 นาที (${state.durationMinutes} นาที / ${state.questionCount} ข้อ)`
       });
     }
 
@@ -222,39 +266,48 @@
   }
 
   function buildSimpleSummary(ctx, validation) {
+    const creditParts = [];
+    if (ctx.creatorName) {
+      creditParts.push(`ผู้สร้าง: ${ctx.creatorName}`);
+    }
+    if (ctx.schoolName) {
+      creditParts.push(`โรงเรียน: ${ctx.schoolName}`);
+    }
+
     return {
       isReady: validation.isValid,
       subjectLabel: ctx.effectiveSubject || 'ยังไม่ระบุรายวิชา',
-      groupLabel: ctx.group.label,
-      gradeLabel: ctx.grade || 'ยังไม่ระบุระดับชั้น',
+      groupLabel: ctx.effectiveGroupLabel,
+      gradeLabel: ctx.effectiveGrade || 'ยังไม่ระบุระดับชั้น',
       topicLabel: ctx.topic || 'ยังไม่ระบุหัวข้อที่สอน',
       objectivesLabel: ctx.objectives || 'ยังไม่ระบุจุดประสงค์การเรียนรู้',
-      workloadLabel: `${ctx.questionCount} ข้อ/ภารกิจ • ${ctx.durationMinutes} นาที • ${ctx.difficulty.label}`,
-      activityLabel: `${ctx.activityType.label} (${ctx.activityType.thaiLabel})`,
+      creditLabel: creditParts.join(' • '),
+      workloadLabel: `${ctx.questionCount} ข้อ • ${ctx.durationMinutes} นาที • ${ctx.difficulty.label}`,
+      activityLabel: ctx.effectiveActivityLabel || `${ctx.activityType.label} (${ctx.activityType.thaiLabel})`,
       strategyLabel: ctx.useStudentSeed
         ? `${ctx.strategy.code}: ${ctx.strategy.name} (${ctx.differentiation.label})`
-        : 'ปิด Seed รายบุคคล (ชุดมาตรฐานเดียวกันทั้งห้อง)',
+        : 'ชุดมาตรฐานเดียวกันทั้งห้อง (ไม่แยกเลขที่)',
       classScopeLabel: ctx.useStudentSeed
-        ? `สร้างและตรวจความซ้ำสำหรับเลขที่ 1–${ctx.classSize}`
-        : `รองรับผู้เรียน ${ctx.classSize} คน`,
+        ? `ตรวจความซ้ำเลขที่ 1–${ctx.classSize}`
+        : `รองรับ ${ctx.classSize} คน`,
       feedbackRulesLabel: [
-        ctx.appModeLabel,
-        ctx.enableFeedback ? 'แสดง Feedback' : 'ปิด Feedback ละเอียด',
-        ctx.showAnswers ? 'แสดงเฉลย/แนวคำตอบ' : 'ซ่อนเฉลยไว้ในโหมดครู'
+        ctx.appMode === 'practice' ? 'โหมดฝึกซ้อม' : 'โหมดประเมินจริง',
+        ctx.enableFeedback ? 'แสดง Feedback' : 'ปิด Feedback',
+        ctx.showAnswers ? 'แสดงเฉลย' : 'ซ่อนเฉลยในโหมดครู'
       ].join(' • '),
       outputLabel:
         ctx.outputStructure === 'single-file'
-          ? 'ไฟล์ HTML เดียวเปิดใช้ได้ทันที'
+          ? 'ไฟล์ HTML เดียวเปิดใช้ทันที'
           : 'โปรเจกต์แยกไฟล์พร้อมขึ้น GitHub Pages',
       deliverables: [
-        'หน้าเว็บแอปสำหรับนักเรียน (Responsive + ภาษาไทย)',
+        'หน้าเว็บแอปสำหรับนักเรียน (รองรับมือถือ + ภาษาไทย)',
         ctx.useStudentSeed
-          ? 'ระบบสุ่ม/เลือกโจทย์กำหนดซ้ำได้จากเลขที่นักเรียน'
-          : 'แบบฝึกหัด/กิจกรรมโต้ตอบเรียงลำดับชัดเจน',
+          ? 'ระบบสร้างโจทย์ตามเลขที่นักเรียน (เปิดซ้ำได้ชุดเดิม)'
+          : 'แบบฝึกหัดเรียงลำดับชัดเจน',
         ctx.activityType.isSubjective
-          ? 'ตาราง Rubric ประเมินเหตุผล (หลีกเลี่ยง Keyword Matching)'
-          : 'ระบบตรวจคำตอบอัตโนมัติพร้อมคำอธิบายวิธีคิด',
-        'โหมดครู + ตัวตรวจเลขที่นักเรียน + คำแนะนำ GitHub Pages'
+          ? 'ตาราง Rubric ประเมินเหตุผล (ไม่ใช้ Keyword Matching อย่างเดียว)'
+          : 'ระบบตรวจคำตอบอัตโนมัติพร้อมคำอธิบาย',
+        'โหมดครูสำหรับตรวจโจทย์หลายเลขที่ + คู่มือ GitHub Pages'
       ]
     };
   }

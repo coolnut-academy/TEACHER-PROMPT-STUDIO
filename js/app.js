@@ -1,9 +1,10 @@
 /**
  * Teacher Prompt Studio — Main UI Controller (Mobile-Portrait First & iOS Liquid Glass)
  *
- * Manages 3-step tabbed navigation, form state, LocalStorage draft persistence,
- * presets, real-time Prompt Preview (Full & Simple views), Clipboard Copy,
- * .txt Export, Lucide icon hydration, and accessible modals.
+ * Manages 3-step tabbed navigation, Hamburger menu, How-To modal, real Custom inputs
+ * (Subject Group, Subject, Grade, Activity), optional Creator/School fields,
+ * LocalStorage draft persistence, presets, real-time Prompt Preview, Copy, .txt Export,
+ * and Lucide icon hydration.
  */
 (function (root) {
   'use strict';
@@ -26,7 +27,8 @@
     'scenario': 'compass',
     'case-study': 'folder-search',
     'interactive': 'mouse-pointer-click',
-    'mixed': 'layers'
+    'mixed': 'layers',
+    'custom': 'sliders'
   };
 
   let appState = engine.createDefaultState();
@@ -44,6 +46,14 @@
     dom.presetsContainer = document.getElementById('presetsContainer');
     dom.activePresetLabel = document.getElementById('activePresetLabel');
 
+    dom.openHowToBtn = document.getElementById('openHowToBtn');
+    dom.menuToggleBtn = document.getElementById('menuToggleBtn');
+    dom.headerMenuPopover = document.getElementById('headerMenuPopover');
+    dom.menuHowToBtn = document.getElementById('menuHowToBtn');
+    dom.openConceptModalBtn = document.getElementById('openConceptModalBtn');
+    dom.openSampleModalBtn = document.getElementById('openSampleModalBtn');
+    dom.resetAllBtn = document.getElementById('resetAllBtn');
+
     dom.navStep1Btn = document.getElementById('navStep1Btn');
     dom.navStep2Btn = document.getElementById('navStep2Btn');
     dom.navStep3Btn = document.getElementById('navStep3Btn');
@@ -56,16 +66,27 @@
     dom.goToStep3Btn = document.getElementById('goToStep3Btn');
 
     dom.subjectGroupSelect = document.getElementById('subjectGroupSelect');
+    dom.subjectSelectWrapper = document.getElementById('subjectSelectWrapper');
     dom.subjectSelect = document.getElementById('subjectSelect');
+    dom.customGroupWrapper = document.getElementById('customGroupWrapper');
+    dom.customGroupInput = document.getElementById('customGroupInput');
     dom.customSubjectWrapper = document.getElementById('customSubjectWrapper');
     dom.customSubjectInput = document.getElementById('customSubjectInput');
+
     dom.gradeSelect = document.getElementById('gradeSelect');
+    dom.customGradeWrapper = document.getElementById('customGradeWrapper');
+    dom.customGradeInput = document.getElementById('customGradeInput');
     dom.difficultySelect = document.getElementById('difficultySelect');
     dom.topicInput = document.getElementById('topicInput');
     dom.objectivesInput = document.getElementById('objectivesInput');
     dom.questionCountInput = document.getElementById('questionCountInput');
     dom.durationInput = document.getElementById('durationInput');
+    dom.creatorNameInput = document.getElementById('creatorNameInput');
+    dom.schoolNameInput = document.getElementById('schoolNameInput');
+
     dom.assessmentTypeGrid = document.getElementById('assessmentTypeGrid');
+    dom.customActivityWrapper = document.getElementById('customActivityWrapper');
+    dom.customActivityInput = document.getElementById('customActivityInput');
 
     dom.useStudentSeedCheckbox = document.getElementById('useStudentSeedCheckbox');
     dom.seedDependentControls = document.getElementById('seedDependentControls');
@@ -102,7 +123,6 @@
     dom.copyBtnLabel = document.getElementById('copyBtnLabel');
     dom.downloadTxtBtn = document.getElementById('downloadTxtBtn');
     dom.resetPreviewBtn = document.getElementById('resetPreviewBtn');
-    dom.resetAllBtn = document.getElementById('resetAllBtn');
 
     dom.mobileDockDot = document.getElementById('mobileDockDot');
     dom.mobileStatusText = document.getElementById('mobileStatusText');
@@ -110,12 +130,11 @@
     dom.mobileJumpLabel = document.getElementById('mobileJumpLabel');
     dom.mobileCopyBtn = document.getElementById('mobileCopyBtn');
 
-    dom.openConceptModalBtn = document.getElementById('openConceptModalBtn');
-    dom.openSampleModalBtn = document.getElementById('openSampleModalBtn');
     dom.openStrategyExampleBtn = document.getElementById('openStrategyExampleBtn');
     dom.emptyShowSampleBtn = document.getElementById('emptyShowSampleBtn');
     dom.emptyLoadPhysicsBtn = document.getElementById('emptyLoadPhysicsBtn');
 
+    dom.howToModal = document.getElementById('howToModal');
     dom.strategyModal = document.getElementById('strategyModal');
     dom.strategyModalBody = document.getElementById('strategyModalBody');
     dom.conceptModal = document.getElementById('conceptModal');
@@ -160,6 +179,16 @@
     return root.innerWidth >= 1024;
   }
 
+  function toggleMenuPopover(forceOpen) {
+    if (!dom.headerMenuPopover || !dom.menuToggleBtn) {
+      return;
+    }
+    const shouldOpen =
+      typeof forceOpen === 'boolean' ? forceOpen : dom.headerMenuPopover.hidden;
+    dom.headerMenuPopover.hidden = !shouldOpen;
+    dom.menuToggleBtn.setAttribute('aria-expanded', String(shouldOpen));
+  }
+
   function setActiveStep(stepNum, options) {
     const opts = options || {};
     let targetStep = Number(stepNum);
@@ -199,7 +228,6 @@
       dom.step2Pane.hidden = true;
     }
 
-    // Update mobile dock toggle button text & icon
     if (activeStep === 3) {
       dom.mobileJumpLabel.textContent = 'แก้ไข';
       replaceButtonIcon(dom.mobileJumpPreviewBtn, 'pencil');
@@ -222,9 +250,11 @@
     });
 
     dom.gradeSelect.textContent = '';
-    strategies.GRADE_LEVELS.forEach((grade) => {
-      const option = el('option', '', grade);
-      option.value = grade;
+    strategies.GRADE_LEVELS.forEach((gradeItem) => {
+      const id = typeof gradeItem === 'string' ? gradeItem : gradeItem.id;
+      const label = typeof gradeItem === 'string' ? gradeItem : gradeItem.label;
+      const option = el('option', '', label);
+      option.value = id;
       dom.gradeSelect.appendChild(option);
     });
 
@@ -262,6 +292,9 @@
     dom.assessmentTypeGrid.textContent = '';
     strategies.ASSESSMENT_TYPES.forEach((type) => {
       const label = el('label', 'activity-tile');
+      if (type.id === 'custom') {
+        label.classList.add('activity-tile-custom');
+      }
       label.dataset.typeId = type.id;
 
       const radio = document.createElement('input');
@@ -283,6 +316,7 @@
 
       radio.addEventListener('change', () => {
         if (radio.checked) {
+          syncCustomFieldVisibility({ focusTarget: radio.value === 'custom' ? dom.customActivityInput : null });
           handleFormChange({ markCustom: true });
         }
       });
@@ -302,7 +336,7 @@
     });
 
     if (group.id !== 'custom') {
-      const customOption = el('option', '', 'อื่น ๆ / ระบุชื่อรายวิชาเอง...');
+      const customOption = el('option', '', 'อื่น ๆ / พิมพ์ชื่อรายวิชาเอง...');
       customOption.value = '__custom__';
       dom.subjectSelect.appendChild(customOption);
     }
@@ -315,21 +349,43 @@
     } else {
       dom.subjectSelect.value = validValues[0] || '__custom__';
     }
+  }
 
-    const showCustomInput = group.id === 'custom' || dom.subjectSelect.value === '__custom__';
-    dom.customSubjectWrapper.classList.toggle('is-hidden', !showCustomInput);
+  function syncCustomFieldVisibility(options) {
+    const opts = options || {};
+    const isCustomGroup = dom.subjectGroupSelect.value === 'custom';
+    const isCustomSubject = isCustomGroup || dom.subjectSelect.value === '__custom__';
+    const isCustomGrade = dom.gradeSelect.value === '__custom__';
+
+    const selectedActivity = dom.assessmentTypeGrid.querySelector('input[name="assessmentType"]:checked');
+    const isCustomActivity = selectedActivity && selectedActivity.value === 'custom';
+
+    dom.subjectSelectWrapper.classList.toggle('is-hidden', isCustomGroup);
+    dom.customGroupWrapper.classList.toggle('is-hidden', !isCustomGroup);
+    dom.customSubjectWrapper.classList.toggle('is-hidden', !isCustomSubject);
+    dom.customGradeWrapper.classList.toggle('is-hidden', !isCustomGrade);
+    dom.customActivityWrapper.classList.toggle('is-hidden', !isCustomActivity);
+
+    if (opts.focusTarget && typeof opts.focusTarget.focus === 'function') {
+      opts.focusTarget.focus();
+    }
   }
 
   function syncStateToForm(state) {
     dom.subjectGroupSelect.value = state.subjectGroup;
+    dom.customGroupInput.value = state.customGroup || '';
     updateSubjectOptions(state.subjectGroup, state.subject);
-    dom.customSubjectInput.value = state.customSubject;
+    dom.customSubjectInput.value = state.customSubject || '';
+
     dom.gradeSelect.value = state.grade;
+    dom.customGradeInput.value = state.customGrade || '';
     dom.difficultySelect.value = state.difficulty;
     dom.topicInput.value = state.topic;
     dom.objectivesInput.value = state.objectives;
     dom.questionCountInput.value = String(state.questionCount);
     dom.durationInput.value = String(state.durationMinutes);
+    dom.creatorNameInput.value = state.creatorName || '';
+    dom.schoolNameInput.value = state.schoolName || '';
 
     const activityRadios = dom.assessmentTypeGrid.querySelectorAll('input[name="assessmentType"]');
     activityRadios.forEach((radio) => {
@@ -340,6 +396,9 @@
         tile.classList.toggle('is-selected', checked);
       }
     });
+    dom.customActivityInput.value = state.customActivity || '';
+
+    syncCustomFieldVisibility();
 
     dom.useStudentSeedCheckbox.checked = state.useStudentSeed;
     dom.seedDependentControls.classList.toggle('is-disabled', !state.useStudentSeed);
@@ -368,15 +427,20 @@
 
     return {
       subjectGroup: dom.subjectGroupSelect.value,
+      customGroup: dom.customGroupInput.value,
       subject: dom.subjectSelect.value,
       customSubject: dom.customSubjectInput.value,
       grade: dom.gradeSelect.value,
+      customGrade: dom.customGradeInput.value,
       difficulty: dom.difficultySelect.value,
       topic: dom.topicInput.value,
       objectives: dom.objectivesInput.value,
       questionCount: dom.questionCountInput.value,
       durationMinutes: dom.durationInput.value,
+      creatorName: dom.creatorNameInput.value,
+      schoolName: dom.schoolNameInput.value,
       assessmentType: selectedActivity ? selectedActivity.value : 'multiple-choice',
+      customActivity: dom.customActivityInput.value,
       useStudentSeed: dom.useStudentSeedCheckbox.checked,
       classSize: dom.classSizeInput.value,
       differentiationLevel: dom.differentiationSelect.value,
@@ -454,26 +518,34 @@
 
     const items = [
       {
-        label: 'รายวิชาและเป้าหมายการเรียนรู้',
+        label: 'รายวิชาและเป้าหมาย',
         value: `${summary.subjectLabel} • ${summary.gradeLabel} (${summary.groupLabel})`,
         sub: `หัวข้อ: ${summary.topicLabel} | จุดประสงค์: ${summary.objectivesLabel}`
       },
       {
-        label: 'รูปแบบกิจกรรมและปริมาณงาน',
+        label: 'รูปแบบกิจกรรมและเวลา',
         value: summary.activityLabel,
         sub: summary.workloadLabel
       },
       {
-        label: 'กลยุทธ์สร้างโจทย์เฉพาะบุคคล',
+        label: 'โจทย์เฉพาะบุคคล',
         value: summary.strategyLabel,
         sub: summary.classScopeLabel
       },
       {
-        label: 'เกณฑ์การประเมินและผลลัพธ์โค้ด',
+        label: 'การตรวจและไฟล์โค้ด',
         value: summary.feedbackRulesLabel,
-        sub: `รูปแบบโค้ด: ${summary.outputLabel}`
+        sub: `ไฟล์ที่ได้: ${summary.outputLabel}`
       }
     ];
+
+    if (summary.creditLabel) {
+      items.push({
+        label: 'ผู้สร้างและสถานศึกษา',
+        value: summary.creditLabel,
+        sub: 'AI จะแสดงเครดิตนี้บนเว็บแอปที่สร้างให้'
+      });
+    }
 
     items.forEach((item) => {
       const card = el('div', 'simple-card');
@@ -484,9 +556,7 @@
     });
 
     const checklistCard = el('div', 'simple-card');
-    checklistCard.appendChild(
-      el('div', 'simple-card-label', 'สิ่งที่ AI ปลายทางจะสร้างให้เมื่อนำ Prompt ไปใช้')
-    );
+    checklistCard.appendChild(el('div', 'simple-card-label', 'สิ่งที่ AI จะสร้างให้'));
     const list = el('ul', 'simple-checklist');
     summary.deliverables.forEach((line) => {
       list.appendChild(el('li', '', line));
@@ -501,7 +571,7 @@
         el(
           'div',
           'simple-card-sub',
-          'กรอกหัวข้อที่สอนและจุดประสงค์การเรียนรู้ในขั้นที่ 1 ให้ครบ ระบบจะแสดง Prompt ฉบับเต็มทันที'
+          'กรอกข้อมูลจำเป็นในขั้นที่ 1 ให้ครบ ระบบจะสร้าง Prompt ให้ทันที'
         )
       );
       dom.simpleViewContent.appendChild(statusCard);
@@ -517,7 +587,7 @@
       : strat.name;
     dom.activeStrategyDesc.textContent = state.useStudentSeed
       ? strat.shortDesc
-      : 'ปิดใช้เลขที่นักเรียน — ระบบจะสร้างชุดกิจกรรมมาตรฐานเดียวกันทั้งห้อง';
+      : 'ปิดใช้เลขที่นักเรียน — นักเรียนทุกคนทำชุดกิจกรรมเดียวกัน';
   }
 
   function updatePreview(result) {
@@ -571,7 +641,7 @@
     try {
       root.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (_err) {
-      // Ignore storage errors in sandboxed/private modes
+      // Ignore storage errors
     }
   }
 
@@ -616,8 +686,14 @@
       return;
     }
 
+    // Preserve optional creator/school credit when teacher already typed them
+    const preservedCreator = appState.creatorName || '';
+    const preservedSchool = appState.schoolName || '';
+
     appState = engine.normalizeState({
       ...preset.state,
+      creatorName: preservedCreator,
+      schoolName: preservedSchool,
       activePresetId: preset.id
     });
 
@@ -625,10 +701,11 @@
     const result = engine.generatePromptResult(appState);
     updatePreview(result);
     saveStateToStorage(appState);
-    showToast(`โหลด ${preset.title} แล้ว — ปรับแก้ต่อได้ทันที`);
+    showToast(`โหลด ${preset.title} แล้ว`);
   }
 
   function resetAllData() {
+    toggleMenuPopover(false);
     undoSnapshot = { ...appState };
     appState = engine.createDefaultState();
     syncStateToForm(appState);
@@ -745,7 +822,7 @@
       replaceButtonIcon(dom.copyPromptBtn, 'copy');
     }, 2200);
 
-    showToast('คัดลอก Prompt ฉบับเต็มแล้ว — พร้อมวางใน AI ของคุณ');
+    showToast('คัดลอก Prompt แล้ว — นำไปวางใน ChatGPT / Gemini ได้เลย');
   }
 
   function buildDownloadFilename(state) {
@@ -755,7 +832,7 @@
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
       .slice(0, 40);
-    const safeGrade = (state.grade || '')
+    const safeGrade = (state.effectiveGrade || state.grade || '')
       .replace(/[\\/:*?"<>|\s]+/g, '')
       .slice(0, 15);
     const parts = ['teacher-prompt', safeSubject || 'custom', safeGrade].filter(Boolean);
@@ -792,12 +869,25 @@
     dom.panelSimpleView.hidden = isFull;
   }
 
+  function syncModalBodyLock() {
+    const anyOpen = [dom.howToModal, dom.strategyModal, dom.conceptModal, dom.sampleModal].some(
+      (m) => m && !m.hidden
+    );
+    document.body.classList.toggle('modal-open', anyOpen);
+  }
+
   function openModal(modalEl, triggerEl) {
     if (!modalEl) {
       return;
     }
+    toggleMenuPopover(false);
     lastModalTrigger = triggerEl || document.activeElement;
     modalEl.hidden = false;
+    const modalBody = modalEl.querySelector('.modal-body');
+    if (modalBody) {
+      modalBody.scrollTop = 0;
+    }
+    syncModalBodyLock();
     const closeBtn = modalEl.querySelector('.modal-close');
     if (closeBtn) {
       closeBtn.focus();
@@ -809,6 +899,7 @@
       return;
     }
     modalEl.hidden = true;
+    syncModalBodyLock();
     if (lastModalTrigger && typeof lastModalTrigger.focus === 'function') {
       lastModalTrigger.focus();
     }
@@ -825,8 +916,8 @@
     const intro = el(
       'p',
       '',
-      `สำหรับรายวิชา "${state.effectiveSubject || group.label}" (${
-        strategies.getAssessmentTypeById(state.assessmentType).thaiLabel
+      `สำหรับวิชา "${state.effectiveSubject || state.effectiveGroupLabel}" (${
+        state.effectiveActivityLabel || strategies.getAssessmentTypeById(state.assessmentType).thaiLabel
       }) ระบบใช้:`
     );
     dom.strategyModalBody.appendChild(intro);
@@ -841,7 +932,11 @@
 
     if (state.topic) {
       dom.strategyModalBody.appendChild(
-        el('p', '', `หัวข้อที่กำลังออกแบบ: "${state.topic}" (ระดับชั้น ${state.grade})`)
+        el(
+          'p',
+          '',
+          `หัวข้อ: "${state.topic}" (${state.effectiveGrade || 'ไม่ระบุระดับชั้น'})`
+        )
       );
     }
 
@@ -876,7 +971,7 @@
     dom.strategyModalBody.appendChild(compareGrid);
 
     dom.strategyModalBody.appendChild(
-      el('h3', 'modal-list-heading', 'หลักการตรวจสอบที่ AI จะใส่ให้ในเว็บแอป')
+      el('h3', 'modal-list-heading', 'ระบบตรวจทานที่ AI จะใส่ให้')
     );
 
     const ul = el('ul', 'simple-checklist');
@@ -885,7 +980,7 @@
       el(
         'li',
         '',
-        `ตรวจสอบความซ้ำและเฉลยครอบคลุมเลขที่ 1 ถึง ${state.classSize} และเตือนครูตรวจทานก่อนใช้จริง`
+        `ตรวจความซ้ำและเฉลยเลขที่ 1–${state.classSize} พร้อมเตือนครูตรวจก่อนสอนจริง`
       )
     );
     dom.strategyModalBody.appendChild(ul);
@@ -926,6 +1021,23 @@
   }
 
   function bindEvents() {
+    // Hamburger menu toggle & outside-click close
+    dom.menuToggleBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleMenuPopover();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (
+        dom.headerMenuPopover &&
+        !dom.headerMenuPopover.hidden &&
+        !dom.headerMenuPopover.contains(event.target) &&
+        !dom.menuToggleBtn.contains(event.target)
+      ) {
+        toggleMenuPopover(false);
+      }
+    });
+
     // Segmented step switcher
     [dom.navStep1Btn, dom.navStep2Btn, dom.navStep3Btn].forEach((btn) => {
       if (!btn) {
@@ -959,7 +1071,6 @@
       }
     });
 
-    // Ensure desktop resize from Mobile Step 3 never hides builder column
     if (typeof root.matchMedia === 'function') {
       const desktopQuery = root.matchMedia('(min-width: 1024px)');
       const handleViewportChange = (e) => {
@@ -974,27 +1085,38 @@
 
     dom.subjectGroupSelect.addEventListener('change', () => {
       updateSubjectOptions(dom.subjectGroupSelect.value, '');
+      const isCustomGroup = dom.subjectGroupSelect.value === 'custom';
+      syncCustomFieldVisibility({
+        focusTarget: isCustomGroup ? dom.customSubjectInput : null
+      });
       handleFormChange({ markCustom: true });
     });
 
     dom.subjectSelect.addEventListener('change', () => {
-      const showCustom =
+      const isCustom =
         dom.subjectGroupSelect.value === 'custom' || dom.subjectSelect.value === '__custom__';
-      dom.customSubjectWrapper.classList.toggle('is-hidden', !showCustom);
+      syncCustomFieldVisibility({ focusTarget: isCustom ? dom.customSubjectInput : null });
       handleFormChange({ markCustom: true });
-      if (showCustom) {
-        dom.customSubjectInput.focus();
-      }
+    });
+
+    dom.gradeSelect.addEventListener('change', () => {
+      const isCustomGrade = dom.gradeSelect.value === '__custom__';
+      syncCustomFieldVisibility({ focusTarget: isCustomGrade ? dom.customGradeInput : null });
+      handleFormChange({ markCustom: true });
     });
 
     const liveInputFields = [
+      dom.customGroupInput,
       dom.customSubjectInput,
-      dom.gradeSelect,
+      dom.customGradeInput,
       dom.difficultySelect,
       dom.topicInput,
       dom.objectivesInput,
       dom.questionCountInput,
       dom.durationInput,
+      dom.creatorNameInput,
+      dom.schoolNameInput,
+      dom.customActivityInput,
       dom.useStudentSeedCheckbox,
       dom.classSizeInput,
       dom.differentiationSelect,
@@ -1030,11 +1152,13 @@
     dom.resetAllBtn.addEventListener('click', resetAllData);
     dom.resetPreviewBtn.addEventListener('click', resetAllData);
 
+    dom.openHowToBtn.addEventListener('click', () => openModal(dom.howToModal, dom.openHowToBtn));
+    dom.menuHowToBtn.addEventListener('click', () => openModal(dom.howToModal, dom.menuToggleBtn));
     dom.openConceptModalBtn.addEventListener('click', () =>
-      openModal(dom.conceptModal, dom.openConceptModalBtn)
+      openModal(dom.conceptModal, dom.menuToggleBtn)
     );
     dom.openSampleModalBtn.addEventListener('click', () =>
-      openSamplePromptModal(dom.openSampleModalBtn)
+      openSamplePromptModal(dom.menuToggleBtn)
     );
     dom.emptyShowSampleBtn.addEventListener('click', () =>
       openSamplePromptModal(dom.emptyShowSampleBtn)
@@ -1064,7 +1188,7 @@
       });
     });
 
-    [dom.strategyModal, dom.conceptModal, dom.sampleModal].forEach((backdrop) => {
+    [dom.howToModal, dom.strategyModal, dom.conceptModal, dom.sampleModal].forEach((backdrop) => {
       backdrop.addEventListener('click', (event) => {
         if (event.target === backdrop) {
           closeModal(backdrop);
@@ -1074,8 +1198,13 @@
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        [dom.strategyModal, dom.conceptModal, dom.sampleModal].forEach((modal) => {
-          if (!modal.hidden) {
+        if (dom.headerMenuPopover && !dom.headerMenuPopover.hidden) {
+          toggleMenuPopover(false);
+          dom.menuToggleBtn.focus();
+          return;
+        }
+        [dom.howToModal, dom.strategyModal, dom.conceptModal, dom.sampleModal].forEach((modal) => {
+          if (modal && !modal.hidden) {
             closeModal(modal);
           }
         });

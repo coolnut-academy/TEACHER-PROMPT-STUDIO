@@ -22,8 +22,14 @@ teacher-prompt-studio/
 │   ├── prompt-engine.js        # ระบบตรวจสอบความครบถ้วน จัดการกลยุทธ์ และประกอบ Prompt
 │   └── app.js                  # ควบคุม UI 3 ขั้นตอน, LocalStorage Draft, Copy, Download .txt และ Modals
 ├── assets/
-│   ├── favicon.svg             # ไอคอนแท็บเบราว์เซอร์
-│   └── logo-mark.svg           # โลโก้หลัก
+│   ├── apple-touch-icon.png    # ไอคอนหน้าจอหลัก iOS (180x180) จาก logo.png
+│   ├── favicon.ico             # Favicon หลายขนาด (16/32/48)
+│   ├── favicon-16.png          # Favicon 16x16
+│   ├── favicon-32.png          # Favicon 32x32
+│   ├── icon-192.png            # Web App Icon 192x192
+│   ├── icon-512.png            # Web App Icon 512x512
+│   └── logo-mark.png           # โลโก้หลักของเว็บแอป (128x128)
+├── logo.png                    # ภาพโลโก้ต้นฉบับ
 ├── .nojekyll                   # ป้องกัน GitHub Pages ไม่ให้ประมวลผลผ่าน Jekyll
 └── README.md                   # คู่มือการใช้งาน พัฒนาต่อ และเผยแพร่
 ```

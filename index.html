@@ -4,8 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="Teacher Prompt Studio — เครื่องมือช่วยครูออกแบบ Prompt สำหรับให้ AI สร้างเว็บแอปแบบฝึกหัดและการประเมินเฉพาะบุคคล">
+  <meta name="theme-color" content="#eff6ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Teacher Prompt Studio">
   <title>Teacher Prompt Studio — ออกแบบ Prompt สร้างเว็บแอปการเรียนรู้</title>
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -20,27 +26,53 @@
   <header class="site-header">
     <div class="container header-inner">
       <div class="brand-group">
-        <img src="assets/logo-mark.svg" alt="" class="brand-logo" width="38" height="38">
+        <img src="assets/logo-mark.png" alt="Teacher Prompt Studio" class="brand-logo" width="40" height="40">
         <div class="brand-copy">
           <h1 class="brand-title">Teacher Prompt Studio</h1>
           <p class="brand-tagline">Teachers Design. AI Builds. Students Learn.</p>
         </div>
       </div>
 
-      <nav class="header-actions" aria-label="เครื่องมือช่วยเหลือ">
-        <button type="button" class="glass-icon-btn" id="openConceptModalBtn" title="แนวคิด Personalized Assessment" aria-label="แนวคิด Personalized Assessment">
-          <i data-lucide="book-open"></i>
-          <span class="btn-label-desktop">แนวคิด</span>
+      <div class="header-actions">
+        <button type="button" class="btn-howto-pill" id="openHowToBtn">
+          <i data-lucide="help-circle"></i>
+          <span class="howto-label-short">วิธีใช้</span>
+          <span class="howto-label-full">วิธีใช้งาน</span>
         </button>
-        <button type="button" class="glass-icon-btn" id="openSampleModalBtn" title="ดูตัวอย่าง Prompt" aria-label="ดูตัวอย่าง Prompt">
-          <i data-lucide="file-text"></i>
-          <span class="btn-label-desktop">ตัวอย่าง</span>
-        </button>
-        <button type="button" class="glass-icon-btn glass-icon-btn-danger" id="resetAllBtn" title="ล้างข้อมูลทั้งหมด" aria-label="ล้างข้อมูลทั้งหมด">
-          <i data-lucide="rotate-ccw"></i>
-          <span class="btn-label-desktop">ล้างข้อมูล</span>
-        </button>
-      </nav>
+
+        <div class="menu-anchor">
+          <button
+            type="button"
+            class="glass-icon-btn"
+            id="menuToggleBtn"
+            aria-label="เปิดเมนูเพิ่มเติม"
+            aria-expanded="false"
+            aria-controls="headerMenuPopover"
+          >
+            <i data-lucide="menu"></i>
+          </button>
+
+          <div class="glass-menu-popover" id="headerMenuPopover" role="menu" hidden>
+            <button type="button" class="glass-menu-item" id="menuHowToBtn" role="menuitem">
+              <i data-lucide="help-circle"></i>
+              <span>วิธีใช้งานเว็บไซต์</span>
+            </button>
+            <button type="button" class="glass-menu-item" id="openConceptModalBtn" role="menuitem">
+              <i data-lucide="book-open"></i>
+              <span>แนวคิดโจทย์รายบุคคล</span>
+            </button>
+            <button type="button" class="glass-menu-item" id="openSampleModalBtn" role="menuitem">
+              <i data-lucide="file-text"></i>
+              <span>ดูตัวอย่าง Prompt</span>
+            </button>
+            <div class="glass-menu-divider" role="separator"></div>
+            <button type="button" class="glass-menu-item is-danger" id="resetAllBtn" role="menuitem">
+              <i data-lucide="rotate-ccw"></i>
+              <span>ล้างข้อมูลทั้งหมด</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -50,7 +82,7 @@
       <div class="preset-strip-top">
         <span class="preset-strip-label">
           <i data-lucide="sparkles"></i>
-          <span>เริ่มไวจากตัวอย่างวิชา</span>
+          <span>เริ่มไวจากตัวอย่าง</span>
         </span>
         <span class="presets-status" id="activePresetLabel">กำหนดเอง</span>
       </div>
@@ -108,7 +140,7 @@
               <div class="card-head">
                 <div>
                   <h2 id="step1Heading" class="card-title">ข้อมูลการสอน</h2>
-                  <p class="card-subtitle">กรอกหัวข้อและจุดประสงค์ เพื่อสร้าง Prompt ทันที</p>
+                  <p class="card-subtitle">กรอกหัวข้อและสิ่งที่อยากให้เด็กทำได้</p>
                 </div>
                 <span class="step-pill">ขั้นที่ 1</span>
               </div>
@@ -121,7 +153,7 @@
                   <select id="subjectGroupSelect" name="subjectGroup" class="glass-control" required></select>
                 </div>
 
-                <div class="field-group">
+                <div class="field-group" id="subjectSelectWrapper">
                   <label for="subjectSelect" class="field-label">
                     รายวิชา <span class="required-mark" aria-hidden="true">*</span>
                   </label>
@@ -129,9 +161,23 @@
                 </div>
               </div>
 
+              <div class="field-group is-hidden" id="customGroupWrapper">
+                <label for="customGroupInput" class="field-label">
+                  ชื่อกลุ่มสาระ / หมวดวิชา (ถ้ามี)
+                </label>
+                <input
+                  type="text"
+                  id="customGroupInput"
+                  name="customGroup"
+                  class="glass-control"
+                  maxlength="120"
+                  placeholder="เช่น กิจกรรมพัฒนาผู้เรียน, วิชาเลือกเสรี"
+                >
+              </div>
+
               <div class="field-group is-hidden" id="customSubjectWrapper">
                 <label for="customSubjectInput" class="field-label">
-                  ระบุชื่อรายวิชาเฉพาะทาง <span class="required-mark" aria-hidden="true">*</span>
+                  พิมพ์ชื่อรายวิชาเอง <span class="required-mark" aria-hidden="true">*</span>
                 </label>
                 <input
                   type="text"
@@ -157,9 +203,23 @@
                 </div>
               </div>
 
+              <div class="field-group is-hidden" id="customGradeWrapper">
+                <label for="customGradeInput" class="field-label">
+                  พิมพ์ระดับชั้นเอง <span class="required-mark" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="customGradeInput"
+                  name="customGrade"
+                  class="glass-control"
+                  maxlength="80"
+                  placeholder="เช่น อนุบาล 3, ปวส.2, กศน. ม.ปลาย, บุคคลทั่วไป"
+                >
+              </div>
+
               <div class="field-group">
                 <label for="topicInput" class="field-label">
-                  หัวข้อหรือเนื้อหาที่สอน <span class="required-mark" aria-hidden="true">*</span>
+                  หัวข้อที่สอน <span class="required-mark" aria-hidden="true">*</span>
                 </label>
                 <input
                   type="text"
@@ -168,7 +228,7 @@
                   class="glass-control"
                   maxlength="200"
                   required
-                  placeholder="เช่น การเคลื่อนที่แนวตรง, การอ่านจับใจความสำคัญ"
+                  placeholder="เช่น การเคลื่อนที่แนวตรง, การอ่านจับใจความ"
                 >
               </div>
 
@@ -183,7 +243,7 @@
                   rows="3"
                   maxlength="800"
                   required
-                  placeholder="เช่น นักเรียนสามารถวิเคราะห์ตัวแปรและคำนวณหาความเร็ว ระยะทาง หรือเวลาได้ถูกต้อง"
+                  placeholder="เช่น นักเรียนคำนวณความเร็วและระยะทางได้ถูกต้อง"
                 ></textarea>
               </div>
 
@@ -205,7 +265,7 @@
                 </div>
 
                 <div class="field-group">
-                  <label for="durationInput" class="field-label">เวลาประเมิน</label>
+                  <label for="durationInput" class="field-label">เวลา</label>
                   <div class="input-with-unit">
                     <input
                       type="number"
@@ -220,17 +280,57 @@
                   </div>
                 </div>
               </div>
+
+              <div class="form-grid form-grid-2 optional-credit-grid">
+                <div class="field-group">
+                  <label for="creatorNameInput" class="field-label">ชื่อผู้สร้างเว็บ / ครู (ถ้ามี)</label>
+                  <input
+                    type="text"
+                    id="creatorNameInput"
+                    name="creatorName"
+                    class="glass-control"
+                    maxlength="100"
+                    placeholder="ไม่ใส่ก็ได้ เช่น ครูสมใจ ใจดี"
+                  >
+                </div>
+
+                <div class="field-group">
+                  <label for="schoolNameInput" class="field-label">ชื่อโรงเรียน (ถ้ามี)</label>
+                  <input
+                    type="text"
+                    id="schoolNameInput"
+                    name="schoolName"
+                    class="glass-control"
+                    maxlength="120"
+                    placeholder="ไม่ใส่ก็ได้ เช่น โรงเรียน..."
+                  >
+                </div>
+              </div>
             </div>
 
             <div class="glass-card">
               <div class="card-head">
                 <div>
                   <h2 class="card-title">รูปแบบกิจกรรม</h2>
-                  <p class="card-subtitle">เลือกวิธีให้นักเรียนทำแบบฝึกหัดหรือประเมินผล</p>
+                  <p class="card-subtitle">เลือกวิธีให้นักเรียนทำแบบฝึกหัด</p>
                 </div>
               </div>
 
               <div class="activity-grid" id="assessmentTypeGrid" role="radiogroup" aria-label="ประเภทกิจกรรมหรือการประเมิน"></div>
+
+              <div class="field-group is-hidden custom-activity-box" id="customActivityWrapper">
+                <label for="customActivityInput" class="field-label">
+                  พิมพ์รูปแบบกิจกรรมที่ต้องการเอง <span class="required-mark" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="customActivityInput"
+                  name="customActivity"
+                  class="glass-control"
+                  maxlength="120"
+                  placeholder="เช่น เกมจับคู่คำศัพท์, ใบงานทดลองเสมือน, โครงงานสั้น"
+                >
+              </div>
             </div>
 
             <div class="step-nav-footer">
@@ -246,8 +346,8 @@
             <div class="glass-card">
               <div class="card-head">
                 <div>
-                  <h2 id="step2Heading" class="card-title">โจทย์เฉพาะบุคคลตามเลขที่</h2>
-                  <p class="card-subtitle">ลดการลอกกัน โดยยังคงวัดจุดประสงค์และความยากเดียวกัน</p>
+                  <h2 id="step2Heading" class="card-title">โจทย์แยกตามเลขที่นักเรียน</h2>
+                  <p class="card-subtitle">เด็กแต่ละเลขที่ได้โจทย์ต่างกัน แต่ความยากเท่าเดิม</p>
                 </div>
                 <span class="step-pill">ขั้นที่ 2</span>
               </div>
@@ -255,9 +355,9 @@
               <div class="ios-toggle-row ios-toggle-highlight">
                 <div class="toggle-copy">
                   <label for="useStudentSeedCheckbox" class="toggle-title">
-                    ใช้เลขที่นักเรียนกำหนดโจทย์
+                    สุ่มโจทย์ตามเลขที่นักเรียน
                   </label>
-                  <p class="toggle-desc">เปิดเลขที่เดิมจะได้ชุดเดิมเสมอ</p>
+                  <p class="toggle-desc">เลขที่เดิมเปิดกี่ครั้งก็ได้ชุดเดิม</p>
                 </div>
                 <label class="ios-switch">
                   <input type="checkbox" id="useStudentSeedCheckbox" name="useStudentSeed" checked>
@@ -268,7 +368,7 @@
               <div id="seedDependentControls" class="seed-controls-box">
                 <div class="form-grid form-grid-2-compact">
                   <div class="field-group">
-                    <label for="classSizeInput" class="field-label">นักเรียนในห้อง</label>
+                    <label for="classSizeInput" class="field-label">จำนวนนักเรียน</label>
                     <div class="input-with-unit">
                       <input
                         type="number"
@@ -294,15 +394,15 @@
                     <label for="strategyModeSelect" class="field-label">กลยุทธ์สร้างความต่าง</label>
                     <button type="button" class="btn-link-icon" id="openStrategyExampleBtn">
                       <i data-lucide="eye"></i>
-                      <span>ดูตัวอย่างความต่าง</span>
+                      <span>ดูตัวอย่าง</span>
                     </button>
                   </div>
                   <select id="strategyModeSelect" name="strategyMode" class="glass-control">
-                    <option value="auto">แนะนำอัตโนมัติตามวิชา (Auto)</option>
-                    <option value="numerical">Strategy A — เปลี่ยนตัวเลขและพารามิเตอร์</option>
-                    <option value="contextual">Strategy B — เปลี่ยนบริบท บทอ่าน หรือสถานการณ์</option>
-                    <option value="case-based">Strategy C — เปลี่ยนกรณีศึกษาและเหตุผลวิเคราะห์</option>
-                    <option value="hybrid">Strategy D — ผสมผสานหลายกลยุทธ์</option>
+                    <option value="auto">เลือกให้อัตโนมัติตามวิชา (แนะนำ)</option>
+                    <option value="numerical">Strategy A — เปลี่ยนตัวเลข/ค่าคำนวณ</option>
+                    <option value="contextual">Strategy B — เปลี่ยนบริบท/บทอ่าน</option>
+                    <option value="case-based">Strategy C — เปลี่ยนกรณีศึกษา</option>
+                    <option value="hybrid">Strategy D — ผสมผสานหลายแบบ</option>
                   </select>
 
                   <div class="strategy-glass-pill" id="strategyInsightBox" aria-live="polite">
@@ -320,15 +420,15 @@
               <div class="card-head">
                 <div>
                   <h2 class="card-title">เฉลย โหมดใช้งาน และไฟล์โค้ด</h2>
-                  <p class="card-subtitle">ปรับรูปแบบการตรวจและไฟล์ที่ได้จาก AI</p>
+                  <p class="card-subtitle">กำหนดวิธีตรวจและรูปแบบไฟล์ที่ได้</p>
                 </div>
               </div>
 
               <div class="ios-settings-list">
                 <div class="ios-toggle-row">
                   <div class="toggle-copy">
-                    <label for="enableFeedbackCheckbox" class="toggle-title">แสดงคำแนะนำหลังตอบ (Feedback)</label>
-                    <p class="toggle-desc">อธิบายเหตุผลและแนวคิดเมื่อทำเสร็จ</p>
+                    <label for="enableFeedbackCheckbox" class="toggle-title">แสดงคำแนะนำหลังตอบ</label>
+                    <p class="toggle-desc">อธิบายเหตุผลเมื่อตอบเสร็จ</p>
                   </div>
                   <label class="ios-switch">
                     <input type="checkbox" id="enableFeedbackCheckbox" name="enableFeedback" checked>
@@ -338,8 +438,8 @@
 
                 <div class="ios-toggle-row">
                   <div class="toggle-copy">
-                    <label for="showAnswersCheckbox" class="toggle-title">แสดงเฉลยให้นักเรียนดู</label>
-                    <p class="toggle-desc">หากปิด เฉลยจะอยู่ใน "โหมดครู" เท่านั้น</p>
+                    <label for="showAnswersCheckbox" class="toggle-title">แสดงเฉลยให้นักเรียน</label>
+                    <p class="toggle-desc">ปิดไว้เพื่อดูเฉลยเฉพาะในโหมดครู</p>
                   </div>
                   <label class="ios-switch">
                     <input type="checkbox" id="showAnswersCheckbox" name="showAnswers" checked>
@@ -356,21 +456,21 @@
                       <input type="radio" name="appMode" value="practice" id="appModePractice" checked>
                       <span>
                         <strong>ฝึกซ้อม</strong>
-                        <small>ทำซ้ำได้ เน้นเรียนรู้</small>
+                        <small>ลองทำซ้ำได้</small>
                       </span>
                     </label>
                     <label class="segment-option">
                       <input type="radio" name="appMode" value="assessment" id="appModeAssessment">
                       <span>
                         <strong>ประเมินจริง</strong>
-                        <small>ตรวจรวมหลังกดส่ง</small>
+                        <small>ตรวจหลังกดส่ง</small>
                       </span>
                     </label>
                   </div>
                 </div>
 
                 <div class="field-group">
-                  <span class="field-label">รูปแบบโค้ดจาก AI</span>
+                  <span class="field-label">ไฟล์ที่ได้จาก AI</span>
                   <div class="segmented-control" role="radiogroup" aria-label="รูปแบบโค้ดที่ให้ AI สร้าง">
                     <label class="segment-option">
                       <input type="radio" name="outputStructure" value="single-file" id="outputSingleFile" checked>
@@ -383,7 +483,7 @@
                       <input type="radio" name="outputStructure" value="multi-file" id="outputMultiFile">
                       <span>
                         <strong>แยกไฟล์โปรเจกต์</strong>
-                        <small>พร้อมขึ้น GitHub Pages</small>
+                        <small>ลง GitHub Pages</small>
                       </span>
                     </label>
                   </div>
@@ -391,14 +491,14 @@
               </div>
 
               <div class="field-group">
-                <label for="teacherNotesInput" class="field-label">เงื่อนไขเพิ่มเติมของครู (ไม่บังคับ)</label>
+                <label for="teacherNotesInput" class="field-label">เงื่อนไขเพิ่มเติม (ถ้ามี)</label>
                 <textarea
                   id="teacherNotesInput"
                   name="teacherNotes"
                   class="glass-control glass-textarea"
                   rows="2"
                   maxlength="600"
-                  placeholder="เช่น เน้นบริบทท้องถิ่นของโรงเรียน, แสดงวิธีทำทีละขั้น"
+                  placeholder="เช่น เน้นบริบทท้องถิ่น, แสดงวิธีทำทีละขั้น"
                 ></textarea>
               </div>
             </div>
@@ -468,7 +568,7 @@
                 </div>
                 <h3>กรอกหัวข้อและจุดประสงค์เพื่อสร้าง Prompt</h3>
                 <p>
-                  ระบบจะประกอบคำสั่ง 10 ส่วนให้ AI สร้างเว็บแบบฝึกหัดเฉพาะบุคคลทันทีโดยไม่ใช้ AI API
+                  ใส่ข้อมูลขั้นที่ 1 ให้ครบ หรือเลือกตัวอย่างวิชาด้านบน ระบบจะสร้าง Prompt ให้ทันที
                 </p>
                 <div class="empty-actions">
                   <button type="button" class="btn btn-pearl btn-sm" id="emptyShowSampleBtn">
@@ -496,20 +596,20 @@
             <summary class="guide-summary">
               <span class="guide-summary-left">
                 <i data-lucide="info"></i>
-                <span>วิธีนำไปใช้กับ AI และข้อจำกัดเว็บ Static</span>
+                <span>วิธีนำไปใช้กับ AI และข้อควรรู้</span>
               </span>
               <i data-lucide="chevron-down" class="guide-chevron"></i>
             </summary>
             <div class="guide-content">
               <ol class="usage-steps">
-                <li><strong>คัดลอก Prompt</strong> ด้านล่างแล้วนำไปวางใน ChatGPT, Gemini, Claude หรือ Coding Agent</li>
-                <li><strong>ตรวจทานก่อนสอนจริง:</strong> ลองกรอกเลขที่ 1, 2 และ 15 ในโหมดครู เพื่อตรวจความถูกต้องของโจทย์ เฉลย และ Rubric</li>
-                <li><strong>แชร์ผ่าน GitHub Pages:</strong> อัปโหลดไฟล์ที่ได้ขึ้น GitHub เพื่อแจกลิงก์ให้นักเรียนเปิดใช้งานได้ทันที</li>
+                <li><strong>คัดลอก Prompt</strong> ไปวางใน ChatGPT, Gemini หรือ Claude เพื่อให้ AI เขียนโค้ดเว็บให้ทันที</li>
+                <li><strong>บันทึกเป็นไฟล์ <code>index.html</code></strong> แล้วลองเปิดทดสอบเลขที่ 1, 2 และ 15 ในโหมดครู</li>
+                <li><strong>อัปโหลดขึ้น GitHub Pages</strong> เพื่อแชร์ลิงก์ให้นักเรียนเข้าทำผ่านมือถือหรือคอมพิวเตอร์</li>
               </ol>
               <div class="callout-static">
                 <i data-lucide="alert-triangle"></i>
                 <span>
-                  เว็บแบบ Static (ไม่มี Backend) ไม่สามารถปกปิดเฉลยในโค้ดเบราว์เซอร์ได้ 100% และไม่มีระบบส่งคะแนนกลางแบบถาวร เหมาะสำหรับฝึกทักษะและประเมินผลร่วมกับการตรวจของครู
+                  เว็บแบบ Static (ไม่มีเซิร์ฟเวอร์) ไม่สามารถซ่อนเฉลยในโค้ดหรือเก็บคะแนนรวมศูนย์ถาวรได้ เหมาะสำหรับฝึกทักษะและตรวจประเมินร่วมกับครู
                 </span>
               </div>
             </div>
@@ -536,7 +636,10 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p><strong>Teacher Prompt Studio</strong> • ทำงานบนเบราว์เซอร์ 100% ไม่ส่งข้อมูลออกนอกเครื่อง • GitHub Pages Ready</p>
+      <p class="footer-brand-line">
+        <img src="assets/logo-mark.png" alt="" class="footer-logo" width="20" height="20">
+        <span><strong>Teacher Prompt Studio</strong> • ทำงานบนเบราว์เซอร์ 100% ไม่ส่งข้อมูลออกนอกเครื่อง</span>
+      </p>
     </div>
   </footer>
 
@@ -561,6 +664,44 @@
     </div>
   </div>
 
+  <!-- Modal: How-To Guide -->
+  <div class="modal-backdrop" id="howToModal" role="dialog" aria-modal="true" aria-labelledby="howToModalTitle" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="howToModalTitle" class="modal-title">วิธีใช้งาน Teacher Prompt Studio</h2>
+          <p class="modal-subtitle">4 ขั้นตอนง่าย ๆ สำหรับครู ไม่ต้องเขียนโค้ดเป็น</p>
+        </div>
+        <button type="button" class="modal-close" data-close-modal="howToModal" aria-label="ปิดหน้าต่าง">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body modal-prose">
+        <ol class="howto-steps">
+          <li>
+            <strong>1. กรอกเนื้อหาที่สอน</strong>
+            <p>เลือกวิชา ระดับชั้น พิมพ์หัวข้อและจุดประสงค์ หรือกดเลือกจากตัวอย่างวิชาด้านบน</p>
+          </li>
+          <li>
+            <strong>2. ตั้งค่าโจทย์เฉพาะบุคคล</strong>
+            <p>เปิดใช้การสุ่มตามเลขที่นักเรียน เพื่อลดการลอกกัน และเลือกว่าจะแสดงเฉลยหรือคำแนะนำอย่างไร</p>
+          </li>
+          <li>
+            <strong>3. คัดลอก Prompt ไปวางใน AI</strong>
+            <p>กดปุ่ม <strong>"คัดลอก Prompt"</strong> แล้วนำไปวางใน ChatGPT, Gemini หรือ Claude ได้เลย (หาก AI พิมพ์โค้ดค้างกลางคัน ให้พิมพ์ต่อว่า <code>เขียนโค้ดต่อให้จบสมบูรณ์</code>)</p>
+          </li>
+          <li>
+            <strong>4. เปิดใช้งานและตรวจทานก่อนสอน</strong>
+            <p>บันทึกโค้ดที่ได้เป็นไฟล์ <code>index.html</code> แล้วดับเบิลคลิกเปิดตรวจดูเลขที่ 1, 2 ในโหมดครู ก่อนแจกลิงก์ให้นักเรียนผ่าน GitHub Pages</p>
+          </li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-royal" data-close-modal="howToModal">เริ่มใช้งานเลย</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Strategy Example -->
   <div class="modal-backdrop" id="strategyModal" role="dialog" aria-modal="true" aria-labelledby="strategyModalTitle" hidden>
     <div class="modal-dialog">
@@ -581,44 +722,47 @@
   <div class="modal-backdrop" id="conceptModal" role="dialog" aria-modal="true" aria-labelledby="conceptModalTitle" hidden>
     <div class="modal-dialog modal-dialog-wide">
       <div class="modal-header">
-        <h2 id="conceptModalTitle" class="modal-title">แนวคิด Personalized Assessment</h2>
+        <h2 id="conceptModalTitle" class="modal-title">แนวคิดโจทย์รายบุคคล (Personalized Assessment)</h2>
         <button type="button" class="modal-close" data-close-modal="conceptModal" aria-label="ปิดหน้าต่าง">
           <i data-lucide="x"></i>
         </button>
       </div>
       <div class="modal-body modal-prose">
-        <p class="lead-text">
-          <strong>Teachers Design. AI Builds. Students Learn.</strong><br>
-          ใช้ <strong>เลขที่นักเรียน</strong> เป็นตัวกำหนดโจทย์ให้แตกต่างกันอย่างเป็นธรรม แต่ยังคงวัดจุดประสงค์การเรียนรู้เดียวกัน
-        </p>
+        <div class="modal-brand-banner">
+          <img src="assets/logo-mark.png" alt="" class="modal-brand-logo" width="52" height="52">
+          <p class="lead-text">
+            <strong>Teachers Design. AI Builds. Students Learn.</strong><br>
+            ใช้เลขที่นักเรียนกำหนดโจทย์ให้ต่างกันอย่างเป็นธรรม แต่ยังคงวัดจุดประสงค์เดียวกัน
+          </p>
+        </div>
 
         <div class="concept-grid">
           <div class="concept-card">
             <span class="strategy-badge">Strategy A</span>
-            <h3>Numerical Variation</h3>
-            <p>เหมาะกับคณิตฯ ฟิสิกส์ เคมี — ใช้เลขที่สุ่มชุดตัวเลขที่คำนวณซ้ำได้เหมือนเดิม ตรวจช่วงค่าและคำนวณเฉลยสอดคล้องกัน</p>
+            <h3>เปลี่ยนตัวเลข (Numerical)</h3>
+            <p>เหมาะกับคณิตฯ ฟิสิกส์ เคมี — สุ่มตัวเลขใหม่ตามเลขที่ พร้อมคำนวณเฉลยตรงตามโจทย์จริง</p>
           </div>
           <div class="concept-card">
             <span class="strategy-badge">Strategy B</span>
-            <h3>Contextual Variation</h3>
-            <p>เหมาะกับภาษาไทย ภาษาต่างประเทศ ศิลปะ การงาน — หมุนเวียนคลังบทอ่านหรือสถานการณ์ โดยใช้ Rubric ร่วมกัน</p>
+            <h3>เปลี่ยนบริบท (Contextual)</h3>
+            <p>เหมาะกับภาษา ศิลปะ การงาน — สลับบทอ่านหรือสถานการณ์ตามเลขที่ โดยใช้ Rubric ร่วมกัน</p>
           </div>
           <div class="concept-card">
             <span class="strategy-badge">Strategy C</span>
-            <h3>Case-Based Variation</h3>
-            <p>เหมาะกับสังคมฯ ประวัติศาสตร์ สุขศึกษา — เปลี่ยนกรณีศึกษาโดยไม่บิดเบือนข้อเท็จจริง พร้อม Rubric เหตุผล</p>
+            <h3>เปลี่ยนกรณีศึกษา (Case-Based)</h3>
+            <p>เหมาะกับสังคมฯ สุขศึกษา — เปลี่ยนกรณีศึกษาโดยไม่บิดเบือนข้อเท็จจริง พร้อม Rubric เหตุผล</p>
           </div>
           <div class="concept-card">
             <span class="strategy-badge">Strategy D</span>
-            <h3>Hybrid Variation</h3>
-            <p>เหมาะกับวิชาบูรณาการหรือกำหนดเอง — ผสมผสานการเปลี่ยนตัวเลข ชุดข้อมูล บริบท และเงื่อนไขวิเคราะห์</p>
+            <h3>ผสมผสาน (Hybrid)</h3>
+            <p>เหมาะกับวิชาบูรณาการหรือกำหนดเอง — เปลี่ยนทั้งบริบท ข้อมูล และตัวเลขร่วมกัน</p>
           </div>
         </div>
 
         <div class="callout-static">
           <i data-lucide="shield-check"></i>
           <span>
-            การใช้เลขที่เป็น Seed ช่วยให้สร้างโจทย์ซ้ำได้แน่นอน แต่ไม่ได้รับประกันว่าไม่ซ้ำ 100% ครูควรตรวจเลขที่ตัวอย่างและเฉลยในโหมดครูก่อนนำไปใช้สอนจริง
+            การใช้เลขที่เป็น Seed ช่วยให้เปิดซ้ำได้ชุดเดิม แต่ไม่การันตีว่าไม่ซ้ำ 100% ครูควรตรวจเลขที่ตัวอย่างและเฉลยในโหมดครูก่อนใช้จริง
           </span>
         </div>
       </div>
@@ -633,7 +777,7 @@
     <div class="modal-dialog modal-dialog-wide">
       <div class="modal-header">
         <div>
-          <h2 id="sampleModalTitle" class="modal-title">ตัวอย่าง Prompt ที่สมบูรณ์ (ฟิสิกส์ ม.4)</h2>
+          <h2 id="sampleModalTitle" class="modal-title">ตัวอย่าง Prompt (ฟิสิกส์ ม.4)</h2>
           <p class="modal-subtitle">คัดลอกไปวางใน ChatGPT, Gemini หรือ Claude ได้ทันที</p>
         </div>
         <button type="button" class="modal-close" data-close-modal="sampleModal" aria-label="ปิดหน้าต่าง">
