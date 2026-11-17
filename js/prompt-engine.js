@@ -297,8 +297,8 @@
       ].join(' • '),
       outputLabel:
         ctx.outputStructure === 'single-file'
-          ? 'ไฟล์ HTML เดียวเปิดใช้ทันที'
-          : 'โปรเจกต์แยกไฟล์พร้อมขึ้น GitHub Pages',
+          ? 'เล่นในแชท AI ทันที (ไฟล์ HTML เดียว)'
+          : 'โปรเจกต์แยกไฟล์สำหรับ GitHub Pages',
       deliverables: [
         'หน้าเว็บแอปสำหรับนักเรียน (รองรับมือถือ + ภาษาไทย)',
         ctx.useStudentSeed

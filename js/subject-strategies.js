@@ -525,7 +525,7 @@
         enableFeedback: true,
         showAnswers: false,
         appMode: 'assessment',
-        outputStructure: 'multi-file',
+        outputStructure: 'single-file',
         teacherNotes: 'ห้ามตัดสินคำตอบอัตนัยด้วย Keyword Matching เพียงอย่างเดียว ให้ออกแบบฟอร์มตอบเป็นขั้นตอน (ระบุปัญหา-ผู้เกี่ยวข้อง-หลักการ-ทางออก) และแสดง Rubric 4 ระดับสำหรับครู'
       }
     },
@@ -579,7 +579,7 @@
         enableFeedback: true,
         showAnswers: true,
         appMode: 'practice',
-        outputStructure: 'multi-file',
+        outputStructure: 'single-file',
         teacherNotes: 'ผสมผสานการเปลี่ยนบริบทกิจกรรมโรงเรียน (เช่น กีฬาสี, ค่ายอาสา, ร้านค้าสหกรณ์) กับชุดตัวเลขข้อมูลที่สุ่มด้วยเลขที่นักเรียน'
       }
     }

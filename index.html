@@ -470,20 +470,20 @@
                 </div>
 
                 <div class="field-group">
-                  <span class="field-label">ไฟล์ที่ได้จาก AI</span>
+                  <span class="field-label">รูปแบบผลลัพธ์จาก AI</span>
                   <div class="segmented-control" role="radiogroup" aria-label="รูปแบบโค้ดที่ให้ AI สร้าง">
                     <label class="segment-option">
                       <input type="radio" name="outputStructure" value="single-file" id="outputSingleFile" checked>
                       <span>
-                        <strong>ไฟล์ HTML เดียว</strong>
-                        <small>เปิดใช้ได้ทันที</small>
+                        <strong>เล่นในแชท AI ทันที</strong>
+                        <small>พรีวิวเว็บ HTML เดียว</small>
                       </span>
                     </label>
                     <label class="segment-option">
                       <input type="radio" name="outputStructure" value="multi-file" id="outputMultiFile">
                       <span>
-                        <strong>แยกไฟล์โปรเจกต์</strong>
-                        <small>ลง GitHub Pages</small>
+                        <strong>โปรเจกต์ GitHub Pages</strong>
+                        <small>แยกไฟล์ HTML/CSS/JS</small>
                       </span>
                     </label>
                   </div>
@@ -602,9 +602,9 @@
             </summary>
             <div class="guide-content">
               <ol class="usage-steps">
-                <li><strong>คัดลอก Prompt</strong> ไปวางใน ChatGPT, Gemini หรือ Claude เพื่อให้ AI เขียนโค้ดเว็บให้ทันที</li>
-                <li><strong>บันทึกเป็นไฟล์ <code>index.html</code></strong> แล้วลองเปิดทดสอบเลขที่ 1, 2 และ 15 ในโหมดครู</li>
-                <li><strong>อัปโหลดขึ้น GitHub Pages</strong> เพื่อแชร์ลิงก์ให้นักเรียนเข้าทำผ่านมือถือหรือคอมพิวเตอร์</li>
+                <li><strong>คัดลอก Prompt</strong> ไปวางใน ChatGPT, Gemini (เปิดโหมด Canvas), Claude หรือ AI ที่รองรับพรีวิวเว็บ</li>
+                <li><strong>กดเล่นในหน้าแชทได้ทันที</strong> (หรือบันทึกเป็นไฟล์ <code>index.html</code> เพื่อเปิดบนเครื่องและอัปโหลดขึ้น GitHub Pages)</li>
+                <li><strong>ทดสอบเลขที่ 1, 2 และ 15</strong> ผ่านปุ่ม "โหมดครู" เพื่อตรวจเฉลยก่อนนำไปสอนจริง</li>
               </ol>
               <div class="callout-static">
                 <i data-lucide="alert-triangle"></i>
@@ -688,11 +688,11 @@
           </li>
           <li>
             <strong>3. คัดลอก Prompt ไปวางใน AI</strong>
-            <p>กดปุ่ม <strong>"คัดลอก Prompt"</strong> แล้วนำไปวางใน ChatGPT, Gemini หรือ Claude ได้เลย (หาก AI พิมพ์โค้ดค้างกลางคัน ให้พิมพ์ต่อว่า <code>เขียนโค้ดต่อให้จบสมบูรณ์</code>)</p>
+            <p>กด <strong>"คัดลอก Prompt"</strong> แล้ววางใน ChatGPT, Gemini (แนะนำเปิดปุ่ม Canvas), Claude หรือ AI อื่น ๆ เพื่อแสดงหน้าเว็บให้ครูกดเล่นในแชทได้ทันที</p>
           </li>
           <li>
-            <strong>4. เปิดใช้งานและตรวจทานก่อนสอน</strong>
-            <p>บันทึกโค้ดที่ได้เป็นไฟล์ <code>index.html</code> แล้วดับเบิลคลิกเปิดตรวจดูเลขที่ 1, 2 ในโหมดครู ก่อนแจกลิงก์ให้นักเรียนผ่าน GitHub Pages</p>
+            <strong>4. ตรวจทานในโหมดครูและใช้งานจริง</strong>
+            <p>ลองกดปุ่ม <strong>"โหมดครู"</strong> ในเว็บที่ได้เพื่อเช็กโจทย์เลขที่ 1, 2 ก่อนสอนจริง หรือโหลดไฟล์ <code>index.html</code> ไปเปิดบนเครื่อง/ลง GitHub Pages</p>
           </li>
         </ol>
       </div>
